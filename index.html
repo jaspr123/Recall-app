@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#171512" />
+<meta name="description" content="Hold-to-repeat line memorizer for ritual work, speeches, and study." />
+<title>Recall</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Recall" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===================== LIBRARY (deck list) ===================== -->
+  <main id="view-library" class="view" data-view="library">
+    <header class="lib-header">
+      <div class="lib-title">
+        <span class="mark">recall</span>
+        <span class="lib-sub">line memory, on your terms</span>
+      </div>
+      <button id="btn-new-deck" class="btn-icon" aria-label="New deck">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <section id="deck-list" class="deck-list"></section>
+
+    <div id="empty-state" class="empty-state" hidden>
+      <p class="empty-line">Nothing to recite yet.</p>
+      <p class="empty-sub">Paste a charge, a lecture, a chair's part — anything you need to carry in your head instead of your hand.</p>
+      <button class="btn-primary" data-open-new-deck>Start a deck</button>
+    </div>
+  </main>
+
+  <!-- ===================== NEW / EDIT DECK ===================== -->
+  <main id="view-editor" class="view" data-view="editor" hidden>
+    <header class="editor-header">
+      <button class="btn-text" id="btn-editor-cancel">Cancel</button>
+      <span class="editor-heading" id="editor-heading">New deck</span>
+      <button class="btn-text btn-text-strong" id="btn-editor-save">Save</button>
+    </header>
+    <div class="editor-body">
+      <label class="field">
+        <span class="field-label">Deck name</span>
+        <input id="input-deck-name" type="text" placeholder="Senior Warden — 2026" autocomplete="off" />
+      </label>
+      <label class="field field-grow">
+        <span class="field-label">Text to memorize</span>
+        <textarea id="input-deck-text" placeholder="Paste the full passage here. It will be split into short pieces automatically — punctuation helps, but it isn't required."></textarea>
+      </label>
+      <p class="field-hint" id="chunk-preview-hint"></p>
+    </div>
+  </main>
+
+  <!-- ===================== PRACTICE ===================== -->
+  <main id="view-practice" class="view" data-view="practice" hidden>
+    <header class="practice-header">
+      <button id="btn-practice-back" class="btn-icon" aria-label="Back to library">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+      <div class="practice-title">
+        <span id="practice-deck-name">Deck</span>
+        <span id="practice-progress" class="practice-progress">0 / 0</span>
+      </div>
+      <button id="btn-practice-menu" class="btn-icon" aria-label="Deck options">
+        <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></svg>
+      </button>
+    </header>
+
+    <div class="progress-rail"><div id="progress-fill" class="progress-fill"></div></div>
+
+    <section class="stage">
+      <div id="done-banner" class="done-banner" hidden>
+        <p class="done-title">That's the whole piece.</p>
+        <p class="done-sub">Run it again from the top, or head back to the library.</p>
+        <button id="btn-restart-deck" class="btn-primary">Practice again</button>
+      </div>
+
+      <div id="bite-card" class="bite-card">
+        <p class="bite-eyebrow" id="bite-eyebrow">current piece</p>
+        <p id="bite-text" class="bite-text">&nbsp;</p>
+        <p id="bite-caption" class="bite-caption"></p>
+      </div>
+
+      <div class="size-row">
+        <button id="btn-size-minus" class="btn-chip" aria-label="Smaller piece">–</button>
+        <span id="size-label" class="size-label">1 piece</span>
+        <button id="btn-size-plus" class="btn-chip" aria-label="Larger piece">+</button>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="source-toggle" role="group" aria-label="Voice source">
+        <button class="source-btn is-active" data-source="tts" id="src-tts">Spoken aloud</button>
+        <button class="source-btn" data-source="mine" id="src-mine">My voice</button>
+      </div>
+
+      <div class="record-row" id="record-row" hidden>
+        <button id="btn-record" class="btn-record">
+          <span class="dot"></span>
+          <span id="record-label">Record this piece</span>
+        </button>
+      </div>
+
+      <button id="btn-hold" class="hold-button" aria-label="Press and hold to hear the current piece">
+        <span class="hold-ring"></span>
+        <span class="hold-label" id="hold-label">HOLD</span>
+      </button>
+
+      <button id="btn-mastered" class="btn-mastered">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12l5 5L20 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        Got it — next piece
+      </button>
+    </section>
+  </main>
+
+  <!-- ===================== DECK MENU SHEET ===================== -->
+  <div id="sheet-backdrop" class="sheet-backdrop" hidden>
+    <div class="sheet">
+      <button class="sheet-item" id="sheet-edit-text">Edit text</button>
+      <button class="sheet-item" id="sheet-reset-progress">Reset progress</button>
+      <button class="sheet-item sheet-item-danger" id="sheet-delete-deck">Delete deck</button>
+      <button class="sheet-item sheet-cancel" id="sheet-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
